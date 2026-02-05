@@ -1,18 +1,28 @@
 from whoosh import index
 from II import index_dir
-from whoosh.qparser import MultifieldParser, OrGroup, FuzzyTermPlugin, PhrasePlugin
+from whoosh.qparser import MultifieldParser, OrGroup, AndGroup, FuzzyTermPlugin, PhrasePlugin
 
 # Load your index here
 ix = index.open_dir(index_dir)
 
-with ix.searcher() as searcher:
-    # Define parser and search logic
-    parser=MultifieldParser(["title","abstract"], schema=ix.schema)
-    query=parser.parse("diabetes")
-    
-    results=searcher.search(query, limit=5)
+def search(text, mode="or", fuzzy=False, limit=5):
+    with ix.searcher() as searcher:
+        # Define parser and search logic
+        group = OrGroup if mode == "or" else AndGroup
+        parser=MultifieldParser(["title","body"], schema=ix.schema, group=group)
 
-    for hit in results:
-        print(hit["doc_id"], hit["title"])
+        if fuzzy:
+            parser.add_plugin(FuzzyTermPlugin())
+
+        parser.add_plugin(PhrasePlugin())
+
+        query=parser.parse(text)
+        
+        results=searcher.search(query, limit=limit)
+
+        for hit in results:
+            print(hit["id"], hit["title"])
+
+search("paranoia")                      
 
 
