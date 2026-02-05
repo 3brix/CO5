@@ -9,7 +9,7 @@ Created on Fri November 28 10:14:29 2025
 @author: agha
 """
 
-
+# i have weak hardware, but managed to run it on colab using xterm, hosting llama3.2.:3b (colab notebook also on github)
 
 import os, json, requests
 from dotenv import load_dotenv
@@ -171,4 +171,41 @@ if __name__ == "__main__":
     q = input("Enter a complex question: ")
     result = graph_of_thought(q)
     pretty_print(result)
+
 "How could a mid-sized coastal city adapt to rising sea levels sustainably with minimal budget?"
+
+
+"""
+Enter a complex question: "How could a mid-sized coastal city adapt to rising sea levels sustainably with minimal budget?"
+Generating key reasoning nodes...
+Nodes: ['Sea Wall Erosion', 'Green Infrastructure', 'Wetland Restoration', 'Elevated Buildings']
+
+Creating relationships between ideas...
+  - Sea Wall Erosion → influences → Elevated Buildings
+  - Green Infrastructure → supports → Wetland Restoration
+  - Wetland Restoration → contradicts → Sea Wall Erosion
+  - Elevated Buildings → contradicts → Green Infrastructure
+
+Summarizing reasoning graph...
+
+=== GRAPH OF THOUGHT ===
+
+Nodes:
+ - Sea Wall Erosion
+ - Green Infrastructure
+ - Wetland Restoration
+ - Elevated Buildings
+
+Edges:
+ - Sea Wall Erosion → influences → Elevated Buildings
+ - Green Infrastructure → supports → Wetland Restoration
+ - Wetland Restoration → contradicts → Sea Wall Erosion
+ - Elevated Buildings → contradicts → Green Infrastructure
+
+=== INSIGHT SUMMARY ===
+
+A mid-sized coastal city can adapt to rising sea levels sustainably with minimal budget by prioritizing multi-faceted strategies
+that minimize infrastructure development. This involves investing in green infrastructure, such as parks and green roofs, which
+supports wetland restoration, reducing erosion risks while creating habitats for marine life. By doing so, the city can minimize 
+construction of elevated buildings and sea walls, instead relying on natural barriers to protect its coastline.
+"""

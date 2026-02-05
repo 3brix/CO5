@@ -6,6 +6,8 @@ Created on Wed November 19 10:45:11 2025
 
 @author: agha
 """
+# i have weak hardware, but managed to run it on colab using xterm, hosting llama3.2.:3b (colab notebook also on github)
+#  i cloned the repo to get the data: https://github.com/vgupta123/sumpubmed.git
 
 from unsloth import FastLanguageModel
 import os
@@ -20,8 +22,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 max_seq_length = 7000
 load_in_4bit = True
-
-sum_pubmed_base_path = "/home/ahmad/Resources/SumPubMed/sumpubmed-master"
+ 
+sum_pubmed_base_path = "/content/sumpubmed/" # colab workspace
 texts_path = os.path.join(sum_pubmed_base_path, 'abstract')# training on full text takes too much time
 shorter_abstract_path = os.path.join(sum_pubmed_base_path, 'shorter_abstract')
 
@@ -198,3 +200,12 @@ if __name__ == "__main__":
 # Average Precision: 0.9408960342407227
 # Average Recall: 0.9042227268218994
 # Average F1: 0.9220747351646423
+
+
+"""Stats (step 0) ...
+Average Precision: 0.8790457844734192
+Average Recall: 0.9207991361618042
+Average F1: 0.8993697762489319
+
+
+"""

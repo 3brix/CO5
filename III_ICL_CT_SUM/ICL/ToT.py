@@ -10,6 +10,7 @@ Created on Fri November 28 12:02:36 2025
 """
 
 
+# i have weak hardware, but managed to run it on colab using xterm, hosting llama3.2.:3b (colab notebook also on github)
 
 import os, json, requests, time
 from dotenv import load_dotenv
@@ -47,7 +48,7 @@ FINAL_SCHEMA = {
         "final_conclusion": {"type": "string"},
         "summary_reasoning": {"type": "string"}
     },
-    "required": ["final_conclusion"]
+    "required": ["final_conclusion", "summary_reasoning"] # added summary reasoning, bacause "Summary:" was first empty
 }
 
 
@@ -180,3 +181,40 @@ if __name__ == "__main__":
     pretty_print(result)
 
 "How could a mid-sized coastal city adapt to rising sea levels sustainably with minimal budget?"
+
+
+
+"""
+
+Enter a complex question: "How could a mid-sized coastal city adapt to rising sea levels sustainably with minimal budget?"
+Generating initial thought branches...
+  - Implement flood-resilient infrastructure using locally sourced, low-cost materials. (Score 7)
+  - Incorporate green infrastructure, such as mangroves and dune restoration, to mitigate sea-level rise impacts. (Score 8)
+  - Adopt a hybrid approach combining decentralized, community-led projects with city-wide initiatives. (Score 9)
+
+Refining top branches...
+  - Implement adaptive and nature-based solutions, integrating green infrastructure like mangroves and dune restoration with decentralized community-led projects. (Score 9)
+  - Develop a hybrid framework that incorporates city-wide initiatives with community-led projects, incorporating green infrastructure solutions like mangrove restoration and adaptive planning for sea-level rise mitigation. This will enable more efficient coordination between stakeholders, better resource allocation, and long-term sustainability. (Score 9.5)
+
+Concluding final answer...
+
+=== TREE OF THOUGHT SUMMARY ===
+
+R1.1) Implement flood-resilient infrastructure using locally sourced, low-cost materials. (Score 7) - This approach prioritizes community engagement and DIY skills, reducing costs associated with imported materials. However, scalability and long-term durability may be concerns.
+R1.2) Incorporate green infrastructure, such as mangroves and dune restoration, to mitigate sea-level rise impacts. (Score 8) - This approach leverages nature's resilience while minimizing upfront costs. However, long-term maintenance and monitoring requirements must be considered.
+R1.3) Adopt a hybrid approach combining decentralized, community-led projects with city-wide initiatives. (Score 9) - This strategy balances local involvement and scalability. However, coordination between different stakeholders may require additional resources and time.
+
+--- Refinements ---
+
+R2.1) Implement adaptive and nature-based solutions, integrating green infrastructure like mangroves and dune restoration with decentralized community-led projects. (Score 9) - This approach balances local involvement, scalability, and leverages nature's resilience while minimizing upfront costs. However, long-term maintenance and monitoring requirements must be considered, and coordination between different stakeholders may require additional resources and time.
+R2.2) Develop a hybrid framework that incorporates city-wide initiatives with community-led projects, incorporating green infrastructure solutions like mangrove restoration and adaptive planning for sea-level rise mitigation. This will enable more efficient coordination between stakeholders, better resource allocation, and long-term sustainability. (Score 9.5) - This approach combines the benefits of local involvement and scalability with the leverage of nature's resilience and adaptive planning. However, initial investment in infrastructure development may be required, and ongoing monitoring and maintenance will be crucial for success.
+
+=== FINAL CONCLUSION ===
+
+A hybrid framework that combines city-wide initiatives with community-led projects can effectively address environmental challenges by incorporating green infrastructure solutions like mangrove restoration and adaptive planning for sea-level rise mitigation. This approach strikes a balance between local involvement and scalability, leveraging nature's resilience while managing the need for initial investment in infrastructure development and ongoing monitoring. By adopting this hybrid approach, cities can prioritize long-term sustainability and efficient coordination among stakeholders.
+
+Summary: This final conclusion synthesizes the benefits of both approaches, highlighting the importance of striking a balance between local involvement and scalability. By incorporating community-led projects with city-wide initiatives, cities can optimize resource allocation and ensure long-term environmental sustainability. The approach prioritizes nature's resilience while acknowledging the need for ongoing monitoring and maintenance.
+
+
+"""
+
