@@ -7,13 +7,13 @@ Created on Wed November 19 07:51:46 2025
 @author: agha
 """
 
-from unsloth import FastLanguageModel
+ffrom unsloth import FastLanguageModel
 import torch
 from datasets import Dataset
 from transformers import TextStreamer
 from trl import SFTTrainer, SFTConfig
 
-max_seq_length = 1024 
+max_seq_length = 1024
 load_in_4bit = True  # quantization method
 
 # uses LoRA and quantization
@@ -38,18 +38,18 @@ model = FastLanguageModel.get_peft_model(
 )
 
 
-lm_prompt = """{}"""
+lm_prompt = "{}"
 EOS_TOKEN = tokenizer.eos_token # each sequence should be ended with this special character, so LLM learns when to stop...
 
-
 def format_dataset_lm():
-    with open('contents/shakespeare.txt', 'r', encoding='utf-8') as f:
+    with open('/content/shakespeare.txt', 'r', encoding='utf-8') as f:
         full_text = f.read()
     # chunk
-    chunk_size = 1000 
+    chunk_size = 1000
+    overlap = 200   # added overlap
     texts = []
-    
-    for i in range(0, len(full_text), chunk_size):
+
+    for i in range(0, len(full_text) - chunk_size, chunk_size - overlap):
         chunk = full_text[i : i + chunk_size]
         # format
         formatted_text = lm_prompt.format(chunk) + EOS_TOKEN
@@ -57,7 +57,7 @@ def format_dataset_lm():
 
     # sanity check
     print(f"Final Dataset size: {len(texts)} chunks")
-    
+
     if len(texts) == 0:
         raise ValueError("Dataset is still empty. Check your file content!")
 
@@ -107,46 +107,34 @@ inputs = tokenizer(
 
 
 text_streamer = TextStreamer(tokenizer)
-_ = model.generate(**inputs, streamer = text_streamer, max_new_tokens = 128)
+_ = model.generate(**inputs, streamer = text_streamer, max_new_tokens = 128, repetition_penalty = 1.2,  temperature = 0.8, top_p = 0.95)  # on fist try: repetiton:added these params (as seen on lectures and GenAI book)
 
 
 # if you have benchmarks to your data, you can use it to evaluate the output
 
-"""my output: <bos>HAMLET:
-
-I am content to be a villain's son.
-
-
-POLIXENES:
-
-I am content to be a villain's son.
-
+"""
+output with improved data preparation:
+<bos>HAMLET: 
+I am content to be your slave.
 
 ROMEO:
-
-I am content to be a villain's son.
-
-
-FRIAR LAURENCE:
-
-I am content to be a villain's son.
-
-
-ROMEO:
-
-I am content to be a villain's son.
-
+Thou canst not speak, nor I cannot hear thee;
+But I will answer thee with deeds most fit.
+Come on, come on, my heart, and we'll away.
 
 FRIAR LAURENCE:
+What, are you gone?
 
-I am content to be a villain's son.
+MERCUTIO:
+Ay, sir, I am gone.
 
+BENVOLIO:
+How now! what is the matter?
 
-ROMEO:
+MERCUTIO:
+I have a paper here that I must read.
 
-I am content to be a villain's son.
+BENVOLIO:
+Read it, or I'll tear it out of thy hand
 
-
-FRIAR LAURENCE:
-
-I am content to be a villain' """
+"""
