@@ -41,11 +41,27 @@ model = FastLanguageModel.get_peft_model(
 lm_prompt = """{}"""
 EOS_TOKEN = tokenizer.eos_token # each sequence should be ended with this special character, so LLM learns when to stop...
 
+
 def format_dataset_lm():
+    with open('contents/shakespeare.txt', 'r', encoding='utf-8') as f:
+        full_text = f.read()
+    # chunk
+    chunk_size = 1000 
+    texts = []
+    
+    for i in range(0, len(full_text), chunk_size):
+        chunk = full_text[i : i + chunk_size]
+        # format
+        formatted_text = lm_prompt.format(chunk) + EOS_TOKEN
+        texts.append(formatted_text)
 
-    texts = [] # list of string each consists of CHARACTER: Utterance formatted in lm_prompt.eg. """MARCIUS: They have a leader,"""
+    # sanity check
+    print(f"Final Dataset size: {len(texts)} chunks")
+    
+    if len(texts) == 0:
+        raise ValueError("Dataset is still empty. Check your file content!")
 
-    return Dataset.from_dict({"text": texts, })
+    return Dataset.from_dict({"text": texts})
 
 dataset = format_dataset_lm()
 
@@ -95,3 +111,42 @@ _ = model.generate(**inputs, streamer = text_streamer, max_new_tokens = 128)
 
 
 # if you have benchmarks to your data, you can use it to evaluate the output
+
+"""my output: <bos>HAMLET:
+
+I am content to be a villain's son.
+
+
+POLIXENES:
+
+I am content to be a villain's son.
+
+
+ROMEO:
+
+I am content to be a villain's son.
+
+
+FRIAR LAURENCE:
+
+I am content to be a villain's son.
+
+
+ROMEO:
+
+I am content to be a villain's son.
+
+
+FRIAR LAURENCE:
+
+I am content to be a villain's son.
+
+
+ROMEO:
+
+I am content to be a villain's son.
+
+
+FRIAR LAURENCE:
+
+I am content to be a villain' """
