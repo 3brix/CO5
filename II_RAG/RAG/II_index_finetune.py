@@ -15,7 +15,6 @@ def evaluate_index(db, test_data, k=3):
     Computes the average F1 score for retrieval across all test questions.
     Contains a nested get_f1 function for self-contained logic.
     """
-    
     def get_f1(true_set, pred_set):
         """Calculates F1 score between two sets of sources."""
         if not pred_set or not true_set:

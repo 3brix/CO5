@@ -26,12 +26,14 @@ os.makedirs(models_path, exist_ok=True)
 # Initialize vector database
 chroma_client = chromadb.PersistentClient(persist_path)
 
+# mapping logic
 LOADER_MAPPING = {
     "doc": (UnstructuredWordDocumentLoader, {}),
     "docx": (UnstructuredWordDocumentLoader, {}),
     "txt": (TextLoader, {"encoding": "utf8"}),
 }
 
+ # load document as list
 def load_single_document(file_path: str) -> (List[Document]):
     ext = file_path.rsplit(".", 1)[-1]
     if ext in LOADER_MAPPING:
@@ -41,6 +43,7 @@ def load_single_document(file_path: str) -> (List[Document]):
         return content
     raise ValueError(f"Unsupported file extension '{ext}'")
 
+# load documents as list
 def load_all_documents(source_path: str) -> List[Document]:
     all_files = []
     output = []
@@ -52,6 +55,7 @@ def load_all_documents(source_path: str) -> List[Document]:
         output.extend(load_single_document(file))
     return output
 
+# split document(s) into chunks (by using constants chunk_size and chunk_overlap)
 def split_documents(source_path) -> List[Document]:
     documents = load_all_documents(source_path)
     if not documents:
@@ -59,11 +63,12 @@ def split_documents(source_path) -> List[Document]:
         texts = None
     else:
         print(f"Loaded {len(documents)} documents from {source_path}")
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)  # 10% overlap is generally good practice
         texts = text_splitter.split_documents(documents)
         print(f"Split into {len(texts)} chunks of text (max. {chunk_size} tokens each) from {len(documents)} documents.")
     return texts
 
+# indexing
 def index():
     print(f"Indexing in progress ...!")
     embeddings = HuggingFaceEmbeddings(model_name=embeddings_model_name, cache_folder=models_path)

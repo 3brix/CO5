@@ -1,6 +1,6 @@
 from whoosh import index
 from II import index_dir
-from whoosh.qparser import MultifieldParser, OrGroup, AndGroup, FuzzyTermPlugin, PhrasePlugin
+from whoosh.qparser import MultifieldParser, OrGroup, FuzzyTermPlugin, PhrasePlugin
 
 # Load your index here
 ix = index.open_dir(index_dir)
@@ -23,6 +23,12 @@ def search(text, mode="or", fuzzy=False, limit=5):
         for hit in results:
             print(hit["id"], hit["title"])
 
-search("paranoia")                      
+
+# output in IR_I-IV_modal.ipynb
+search("schizophrenia")                             # basic search
+search("schizophrenia albinism")                    # mode: orgroup (default)
+search("schizophrenia albinism", mode="and")        # mode: andgroup
+search("schiz*phrenia", fuzzy=True)                 # fuzzy search (handles misspelling /typos)
+search("behavioral therapy for schizophrenia")      # phrase search
 
 

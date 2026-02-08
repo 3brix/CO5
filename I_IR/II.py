@@ -1,18 +1,20 @@
+# i used II_index_solution.py -->  added mesh term
+
 import os
 import pickle
 import shutil
 from tqdm import tqdm
 from whoosh import index
-from I import medline_folder
+from I_fetch_pubmed import medline_folder
 from whoosh.fields import Schema, TEXT, ID, KEYWORD
 
 
 # Schema
 schema = Schema(
-        doc_id=ID(stored=True, unique=True),
-        title=TEXT(stored=True),
-        abstract=TEXT(stored=True),
-        mesh=KEYWORD(stored=True, commas=True)
+    id=ID(stored=True, unique=True),
+    title=TEXT(stored=True),
+    body=TEXT(stored=True),
+    mesh=KEYWORD(stored=True, commas=True) 
 )
 
 # Index
@@ -20,42 +22,23 @@ index_dir = "pubmed_index"
 
 
 def get_index():
-    """create or open whoosh index."""
-    if not os.path.exists(index_dir):
-        os.mkdir(index_dir)
-    if index.exists_in(index_dir):
-        ix=index.open_dir(index_dir)
-    else:
-        ix=index.create_in(index_dir, schema)
+    if os.path.exists(index_dir):
+        shutil.rmtree(index_dir)
+    os.mkdir(index_dir)
+    ix = index.create_in(index_dir, schema)
+    writer = ix.writer()
+    for pkl_file in os.listdir(medline_folder):
+        pkl_obj = pickle.load(open(os.path.join(medline_folder, pkl_file), 'rb'))
+        print('Indexing %s ...'%pkl_file)
 
-    return ix
+        for idx in tqdm(pkl_obj):
+            mesh_terms = pkl_obj[idx][2] if len(pkl_obj[idx]) > 2 else []
+            mesh = ",".join(mesh_terms) if isinstance(mesh_terms, list) else ""  # to handle multiple or no mesh terms
 
+            writer.add_document(id=str(idx), title=pkl_obj[idx][0], body=pkl_obj[idx][1], mesh=mesh)
 
-def index_data():
-    """Load pickle files and add documents to the whoosh index"""
-    pickle_path=os.path.join(medline_folder, "pmid2content.pkl")
-    if not os.path.isfile(pickle_path):
-        raise FileNotFoundError("Pickle file not found. Run I first.")
-    
-    with open(pickle_path, "rb") as F:
-        pmid2content = pickle.load(F)
-
-    ix=get_index()
-    writer = ix.writer(limitmb=512, procs=1, multiseqment=True)  # i have low RAM
-
-    for pmid, data in tqdm(pmid2content.items()):
-        writer.add_document(
-            doc_id=str(pmid),
-            title=data["title"],
-            abstract=data["abstract"],
-            mesh=",".join(data["mesh_terms"]) if data["mesh_terms"] else ""
-        )
-    
     writer.commit()
-    print(f"Indexed{len(pmid2content)} documents.")
-
 
 
 if __name__ == "__main__":
     get_index()
-    index_data()

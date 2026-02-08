@@ -154,7 +154,7 @@ def raw_model_test():
         r=32,  # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                         "gate_proj", "up_proj", "down_proj", ],
-        lora_alpha=8,
+        lora_alpha=16,
         lora_dropout=0.0,
         bias="none",
         use_gradient_checkpointing="unsloth",
@@ -219,9 +219,13 @@ Average Precision: 0.8790457844734192
 Average Recall: 0.9207991361618042
 Average F1: 0.8993697762489319
 
-Stats after finetuning with r=32, alpha= 8...
+Stats after finetuning with r=32, alpha= 8...  --> best
 Average Precision: 0.8810155391693115
 Average Recall: 0.921396017074585
 Average F1: 0.9006903767585754
 
+Stats after finetuning r=32, alpha= 16......
+Average Precision: 0.8810155391693115
+Average Recall: 0.921396017074585
+Average F1: 0.9006903767585754
 """

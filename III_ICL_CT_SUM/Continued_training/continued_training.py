@@ -25,7 +25,7 @@ model, tokenizer = FastLanguageModel.from_pretrained(
 # defaults provide acceptable results
 model = FastLanguageModel.get_peft_model(
     model,
-    r = 16,  # hyperparameter to play?
+    r = 32,  # hyperparameter to play?
     target_modules = ["q_proj", "k_proj", "v_proj", "o_proj",
                       "gate_proj", "up_proj", "down_proj",],
     bias="none",
@@ -46,7 +46,7 @@ def format_dataset_lm():
         full_text = f.read()
     # chunk
     chunk_size = 1000
-    overlap = 200   # added overlap
+    overlap = 100   # updated overlap
     texts = []
 
     for i in range(0, len(full_text) - chunk_size, chunk_size - overlap):
@@ -72,7 +72,7 @@ sftConfig = SFTConfig(
     gradient_accumulation_steps=4,
     warmup_steps=5,
     # max_steps = 1,
-    num_train_epochs=2, #play around with, too much epoch chatastrophic forgetting (output being worse then the previous one)
+    num_train_epochs=3, #play around with, too much epoch chatastrophic forgetting (output being worse then the previous one)
     learning_rate=2e-4,
     fp16=not torch.cuda.is_bf16_supported(),
     bf16=torch.cuda.is_bf16_supported(),
@@ -113,28 +113,30 @@ _ = model.generate(**inputs, streamer = text_streamer, max_new_tokens = 128, rep
 # if you have benchmarks to your data, you can use it to evaluate the output
 
 """
-output with improved data preparation:
+output with improved data preparation, with rank=32, lora_alpha=16 and num_epochs=3:
 <bos>HAMLET: 
-I am content to be your slave.
+I am too sore for this.
 
-ROMEO:
-Thou canst not speak, nor I cannot hear thee;
-But I will answer thee with deeds most fit.
-Come on, come on, my heart, and we'll away.
+GLOUCESTER:
+You are too sore, and therefore cannot think.
 
-FRIAR LAURENCE:
-What, are you gone?
+KING EDWARD IV:
+What is your meaning, Gloucester?
 
-MERCUTIO:
-Ay, sir, I am gone.
+GLOUCESTER:
+My meaning, my liege, is to make you believe
+That I have done it.
 
-BENVOLIO:
-How now! what is the matter?
+HASTINGS:
+And so I will, my lord;
+For I have seen the deed, and know the cause.
 
-MERCUTIO:
-I have a paper here that I must read.
+GLOUCESTER:
+O, then, bethink thee of thy daughter's death!
 
-BENVOLIO:
-Read it, or I'll tear it out of thy hand
+QUEEN ELIZABETH:
+Why, what's that, my lord?
+
+GLOUCESTER:
 
 """

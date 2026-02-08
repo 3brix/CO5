@@ -8,7 +8,6 @@ Created on Tue November 11 04:52:43 2025
 """
 # i run it on modal with I_constants num_gpu_layers = 20
 
-# entry_prediction = [os.path.basename(doc.metadata["source"]) for doc in retriever. Invoke(query)] for windows
 
 import chromadb
 import gradio as gr
