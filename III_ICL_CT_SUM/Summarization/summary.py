@@ -18,15 +18,18 @@ from bert_score import score
 from datasets import Dataset
 from trl import SFTTrainer, SFTConfig
 
+# disables parallelism
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-max_seq_length = 7000
-load_in_4bit = True
+max_seq_length = 7000   # context window
+load_in_4bit = True     # quantization
  
+# data paths
 sum_pubmed_base_path = "/content/sumpubmed/" # colab workspace
 texts_path = os.path.join(sum_pubmed_base_path, 'abstract')# training on full text takes too much time
 shorter_abstract_path = os.path.join(sum_pubmed_base_path, 'shorter_abstract')
 
+# alpaca template (instructions for the model)
 alpaca_instruction = """Below is an instruction that describes a task, paired with an input that provide further context. Write a response that appropriately completes the request.
 
 ### Instruction:
@@ -38,18 +41,21 @@ Your task is to generate a summary for a medical transcript in a clear, concise,
 ### Response:
 {}"""
 
+# define model
 # huggingface-cli download unsloth/Llama-3.2-3B-Instruct-bnb-4bit --local-dir ./models/Llama-3.2-3B-Instruct-bnb-4bit
 # base_model = "./models/gemma-2b-bnb-4bit"#"unsloth/llama-3-8b-bnb-4bit"
 base_model = "./models/Llama-3.2-3B-Instruct-bnb-4bit"
 
 def fine_tune(step):
+    # load model and tokenizer
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=base_model,
         load_in_4bit = load_in_4bit, )
 
+    # apply peft
     peft_model = FastLanguageModel.get_peft_model(
         model,
-        r=16,
+        r=16, 
 
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                         "gate_proj", "up_proj", "down_proj", ],
@@ -62,7 +68,7 @@ def fine_tune(step):
         loftq_config=None,
     )
 
-
+    # formatting dataset
     def formatting_training_lines_sumpubmed():
         EOS_TOKEN = tokenizer.eos_token
         texts = []
@@ -71,6 +77,7 @@ def fine_tune(step):
             text = open(os.path.join(texts_path, 'abstract_%d.txt'%i), 'r').read()[:max_seq_length]
             summary = open(os.path.join(shorter_abstract_path, 'abst_%d.txt'%i), 'r').read()[:max_seq_length]
 
+            # combine it into the alpaca template
             full_text = alpaca_instruction.format(text, summary) + EOS_TOKEN
 
             texts.append(full_text)
@@ -78,6 +85,7 @@ def fine_tune(step):
         return Dataset.from_dict({"text": texts, })
     dataset = formatting_training_lines_sumpubmed()
 
+     # training hyperparams
     sftConfig = SFTConfig(
         per_device_train_batch_size=2,
         gradient_accumulation_steps=4,
@@ -108,9 +116,12 @@ def fine_tune(step):
 
     trainer.train()
 
+    # inference
     FastLanguageModel.for_inference(peft_model)
 
     titles = []
+
+    # load data and generate summary
     for i in tqdm(range(1, 10)):
         text = open(os.path.join(texts_path, 'abstract_%d.txt' % i), 'r').read()[:max_seq_length]
         summary = open(os.path.join(shorter_abstract_path, 'abst_%d.txt' % i), 'r').read()[:max_seq_length]
@@ -125,13 +136,14 @@ def fine_tune(step):
     with open(write_to, 'w') as wr:
         json.dump(titles, wr, indent=1)
 
+    # calculate metrics and save results
     P, R, F1 = score([x['pred'] for x in titles], [x['true'] for x in titles], lang="en", verbose=True)
     print("Stats after finetuning ...")
     print("Average Precision:", P.mean().item())
     print("Average Recall:", R.mean().item())
     print("Average F1:", F1.mean().item())
 
-
+# test
 def raw_model_test():
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=base_model,
@@ -139,7 +151,7 @@ def raw_model_test():
 
     peft_model = FastLanguageModel.get_peft_model(
         model,
-        r=16,  # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
+        r=32,  # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                         "gate_proj", "up_proj", "down_proj", ],
         lora_alpha=8,
@@ -207,5 +219,9 @@ Average Precision: 0.8790457844734192
 Average Recall: 0.9207991361618042
 Average F1: 0.8993697762489319
 
+Stats after finetuning with r=32, alpha= 8...
+Average Precision: 0.8810155391693115
+Average Recall: 0.921396017074585
+Average F1: 0.9006903767585754
 
 """
